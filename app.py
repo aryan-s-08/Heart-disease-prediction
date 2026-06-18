@@ -24,7 +24,7 @@ st.set_page_config(page_title="Heart Disease Prediction",
                    page_icon="🫀", layout="centered")
 
 st.title("🩺 Heart Disease Prediction App")
-st.write("This app predicts the likelihood of heart disease based on patient health data.")
+st.write("This app predicts the chances of heart disease based on patient health data.")
 
 st.markdown("---")
 
@@ -92,13 +92,12 @@ input_encoded[numerical_cols] = scaler.fit_transform(
     input_encoded[numerical_cols])
 
 
-if st.button("🩺 Predict Heart Disease Risk"):
+if st.button("Predict Heart Disease Risk"):
     prediction = model.predict(input_encoded)[0]
     if prediction == 1:
         st.error(
-            " High risk of Heart Disease detected! Please consult a cardiologist.")
+            " High risk of Heart Disease detected!")
     else:
         st.success(" No signs of Heart Disease detected.")
 
-st.markdown("---")
-st.caption("Developed by **Vikas Sharma** | © 2025 | Machine Learning Project")
+
