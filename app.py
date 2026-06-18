@@ -35,7 +35,7 @@ categorical_cols = [
     'Gender', 'ChestPainType', 'FastingBS', 'RestingECG',
     'ExerciseAngina', 'ST_Slope', 'MajorVessels', 'Thalassemia'
 ]
-numerical_cols = ['Age', 'RestingBp', 'Cholesterol', 'MaxHR', 'ST_Depression']
+numerical_cols = ['Age', 'RestingBp', 'Cholesterol', 'MaxHR', 'ST_Depress']
 
 # ------------------------------------------------------
 # Collect user inputs
@@ -55,7 +55,7 @@ with col2:
     RestingECG = st.selectbox("Resting ECG Results", [0, 1, 2])
     MaxHR = st.number_input("Maximum Heart Rate Achieved", 60, 220, 150)
     ExerciseAngina = st.selectbox("Exercise-Induced Angina", [0, 1])
-    ST_Depression = st.number_input("ST Depression", 0.0, 6.0, 1.0, step=0.1)
+    ST_Depress = st.number_input("ST Depress", 0.0, 6.0, 1.0, step=0.1)
     ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
     MajorVessels = st.selectbox("Major Vessels (0–3)", [0, 1, 2, 3])
     Thalassemia = st.selectbox("Thalassemia (1–3)", [1, 2, 3])
@@ -75,7 +75,7 @@ input_dict = {
     'RestingECG': RestingECG,
     'MaxHR': MaxHR,
     'ExerciseAngina': ExerciseAngina,
-    'ST_Depression': ST_Depression,
+    'ST_Depress': ST_Depress,
     'ST_Slope': ST_Slope,
     'MajorVessels': MajorVessels,
     'Thalassemia': Thalassemia
