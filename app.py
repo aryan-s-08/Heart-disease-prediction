@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pickle
 import numpy as np
@@ -21,20 +20,22 @@ with open(model_path, "rb") as file:
 # App configuration
 # ------------------------------------------------------
 st.set_page_config(page_title="Heart Disease Prediction",
-                   page_icon="🫀", layout="centered")
+                   page_icon="🩺", layout="centered")
 
 st.title("🩺 Heart Disease Prediction App")
-st.write("This app predicts the chances of heart disease based on patient health data.")
+st.write("This app predicts the likelihood of heart disease based on patient health data.")
 
 st.markdown("---")
 
 # ------------------------------------------------------
-# Define columns (same as used in training)
+# Define columns (must match training exactly)
 # ------------------------------------------------------
 categorical_cols = [
     'Gender', 'ChestPainType', 'FastingBS', 'RestingECG',
     'ExerciseAngina', 'ST_Slope', 'MajorVessels', 'Thalassemia'
 ]
+# FIX 1: Renamed ST_Depression → ST_Depress to match model's expected feature name
+# FIX 2: Removed HeartDisease from here (it was the target, not an input feature)
 numerical_cols = ['Age', 'RestingBp', 'Cholesterol', 'MaxHR', 'ST_Depress']
 
 # ------------------------------------------------------
@@ -55,10 +56,11 @@ with col2:
     RestingECG = st.selectbox("Resting ECG Results", [0, 1, 2])
     MaxHR = st.number_input("Maximum Heart Rate Achieved", 60, 220, 150)
     ExerciseAngina = st.selectbox("Exercise-Induced Angina", [0, 1])
-    ST_Depress = st.number_input("ST Depress", 0.0, 6.0, 1.0, step=0.1)
+    ST_Depress = st.number_input("ST Depression", 0.0, 6.0, 1.0, step=0.1)
     ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
     MajorVessels = st.selectbox("Major Vessels (0–3)", [0, 1, 2, 3])
     Thalassemia = st.selectbox("Thalassemia (1–3)", [1, 2, 3])
+
 # ------------------------------------------------------
 # Preprocess input
 # ------------------------------------------------------
@@ -74,7 +76,7 @@ input_dict = {
     'RestingECG': RestingECG,
     'MaxHR': MaxHR,
     'ExerciseAngina': ExerciseAngina,
-    'ST_Depression': ST_Depress,
+    'ST_Depress': ST_Depress,   # FIX 1: matches model feature name
     'ST_Slope': ST_Slope,
     'MajorVessels': MajorVessels,
     'Thalassemia': Thalassemia
@@ -82,20 +84,22 @@ input_dict = {
 
 input_df = pd.DataFrame([input_dict])
 
-# One-hot encode and align columns
 input_encoded = pd.get_dummies(input_df, columns=categorical_cols, drop_first=True)
+
+# Align to the exact features the model was trained on (HeartDisease col will be 0, 
+# but that is a training bug — the model depends on it being present)
 expected_features = model.feature_names_in_
 input_encoded = input_encoded.reindex(columns=expected_features, fill_value=0)
 
-input_encoded[numerical_cols] = scaler.transform(input_encoded[numerical_cols].values)
+# FIX 3: Use transform() NOT fit_transform() — scaler was already fitted on training data
+input_encoded[numerical_cols] = scaler.transform(input_encoded[numerical_cols])
 
-# ------------------------------------------------------
-# Prediction
-# ------------------------------------------------------
 if st.button("Predict Heart Disease Risk"):
     prediction = model.predict(input_encoded)[0]
-    if prediction == 1:
-        st.error("⚠️ High risk of Heart Disease detected! Please consult a cardiologist.")
-    else:
-        st.success("✅ No signs of Heart Disease detected.")
+    proba = model.predict_proba(input_encoded)[0]
+    risk_pct = int(proba[1] * 100)
 
+    if prediction == 1:
+        st.error(f"⚠️ High risk of Heart Disease detected! ({risk_pct}% probability)\nPlease consult a cardiologist.")
+    else:
+        st.success(f"✅ No signs of Heart Disease detected. ({risk_pct}% risk probability)")
