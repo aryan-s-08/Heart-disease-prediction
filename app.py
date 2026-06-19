@@ -74,7 +74,7 @@ input_dict = {
     'RestingECG': RestingECG,
     'MaxHR': MaxHR,
     'ExerciseAngina': ExerciseAngina,
-    'ST_Depression': ST_Depression,
+    'ST_Depression': ST_Depress,
     'ST_Slope': ST_Slope,
     'MajorVessels': MajorVessels,
     'Thalassemia': Thalassemia
