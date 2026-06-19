@@ -59,7 +59,6 @@ with col2:
     ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
     MajorVessels = st.selectbox("Major Vessels (0–3)", [0, 1, 2, 3])
     Thalassemia = st.selectbox("Thalassemia (1–3)", [1, 2, 3])
-
 # ------------------------------------------------------
 # Preprocess input
 # ------------------------------------------------------
@@ -75,7 +74,7 @@ input_dict = {
     'RestingECG': RestingECG,
     'MaxHR': MaxHR,
     'ExerciseAngina': ExerciseAngina,
-    'ST_Depress': ST_Depress,
+    'ST_Depression': ST_Depression,
     'ST_Slope': ST_Slope,
     'MajorVessels': MajorVessels,
     'Thalassemia': Thalassemia
@@ -83,21 +82,21 @@ input_dict = {
 
 input_df = pd.DataFrame([input_dict])
 
-input_encoded = pd.get_dummies(
-    input_df, columns=categorical_cols, drop_first=True)
+# One-hot encode and align columns
+input_encoded = pd.get_dummies(input_df, columns=categorical_cols, drop_first=True)
 expected_features = model.feature_names_in_
 input_encoded = input_encoded.reindex(columns=expected_features, fill_value=0)
 
-input_encoded[numerical_cols] = scaler.fit_transform(
-    input_encoded[numerical_cols])
+# FIX: Use transform() instead of fit_transform()
+input_encoded[numerical_cols] = scaler.transform(input_encoded[numerical_cols])
 
-
+# ------------------------------------------------------
+# Prediction
+# ------------------------------------------------------
 if st.button("Predict Heart Disease Risk"):
     prediction = model.predict(input_encoded)[0]
     if prediction == 1:
-        st.error(
-            " High risk of Heart Disease detected!")
+        st.error("⚠️ High risk of Heart Disease detected! Please consult a cardiologist.")
     else:
-        st.success(" No signs of Heart Disease detected.")
-
+        st.success("✅ No signs of Heart Disease detected.")
 
