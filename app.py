@@ -87,8 +87,7 @@ input_encoded = pd.get_dummies(input_df, columns=categorical_cols, drop_first=Tr
 expected_features = model.feature_names_in_
 input_encoded = input_encoded.reindex(columns=expected_features, fill_value=0)
 
-# FIX: Use transform() instead of fit_transform()
-input_encoded[numerical_cols] = scaler.transform(input_encoded[numerical_cols])
+input_encoded[numerical_cols] = scaler.transform(input_encoded[numerical_cols].values)
 
 # ------------------------------------------------------
 # Prediction
