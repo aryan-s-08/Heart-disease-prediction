@@ -34,9 +34,7 @@ categorical_cols = [
     'Gender', 'ChestPainType', 'FastingBS', 'RestingECG',
     'ExerciseAngina', 'ST_Slope', 'MajorVessels', 'Thalassemia'
 ]
-# FIX 1: Renamed ST_Depression → ST_Depress to match model's expected feature name
-# FIX 2: Removed HeartDisease from here (it was the target, not an input feature)
-numerical_cols = ['Age', 'Cholesterol', 'RestingBp', 'MaxHR', 'ST_Depress']  # order must match scaler
+numerical_cols = ['Age', 'Cholesterol', 'RestingBp', 'MaxHR', 'ST_Depress']
 
 # ------------------------------------------------------
 # Collect user inputs
@@ -46,25 +44,34 @@ col1, col2 = st.columns(2)
 with col1:
     Age = st.number_input("Age", 20, 100, 45)
     Gender = st.selectbox("Gender", ["Male", "Female"])
-    ChestPainType = st.selectbox(
-        "Chest Pain Type (0:Typical, 1:Atypical, 2:Non-Anginal, 3:Asymptomatic)", [0, 1, 2, 3])
+    ChestPainType = st.selectbox("Chest Pain Type", [
+        "Typical Angina", "Atypical Angina", "Non-Anginal Pain", "Asymptomatic"])
     RestingBp = st.number_input("Resting Blood Pressure (mm Hg)", 80, 200, 120)
     Cholesterol = st.number_input("Cholesterol (mg/dL)", 100, 600, 200)
 
 with col2:
-    FastingBS = st.selectbox("Fasting Blood Sugar > 120 mg/dl", [0, 1])
-    RestingECG = st.selectbox("Resting ECG Results", [0, 1, 2])
+    FastingBS = st.selectbox("Fasting Blood Sugar > 120 mg/dl", ["No (≤120 mg/dl)", "Yes (>120 mg/dl)"])
+    RestingECG = st.selectbox("Resting ECG Results", [
+        "Normal", "ST-T Abnormality", "Left Ventricular Hypertrophy"])
     MaxHR = st.number_input("Maximum Heart Rate Achieved", 60, 220, 150)
-    ExerciseAngina = st.selectbox("Exercise-Induced Angina", [0, 1])
+    ExerciseAngina = st.selectbox("Exercise-Induced Angina", ["No", "Yes"])
     ST_Depress = st.number_input("ST Depression", 0.0, 6.0, 1.0, step=0.1)
-    ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
-    MajorVessels = st.selectbox("Major Vessels (0–3)", [0, 1, 2, 3])
-    Thalassemia = st.selectbox("Thalassemia (1–3)", [1, 2, 3])
+    ST_Slope = st.selectbox("ST Slope", ["Downsloping", "Flat", "Upsloping"])
+    MajorVessels = st.selectbox("Major Vessels Colored by Fluoroscopy", [
+        "0 vessels", "1 vessel", "2 vessels", "3 vessels"])
+    Thalassemia = st.selectbox("Thalassemia", ["Fixed Defect", "Normal", "Reversible Defect"])
 
 # ------------------------------------------------------
-# Preprocess input
+# Map labels back to numeric values
 # ------------------------------------------------------
 Gender = 1 if Gender == "Male" else 0
+ChestPainType = ["Typical Angina", "Atypical Angina", "Non-Anginal Pain", "Asymptomatic"].index(ChestPainType)
+FastingBS = 0 if FastingBS == "No (≤120 mg/dl)" else 1
+RestingECG = ["Normal", "ST-T Abnormality", "Left Ventricular Hypertrophy"].index(RestingECG)
+ExerciseAngina = 0 if ExerciseAngina == "No" else 1
+ST_Slope = ["Downsloping", "Flat", "Upsloping"].index(ST_Slope)
+MajorVessels = ["0 vessels", "1 vessel", "2 vessels", "3 vessels"].index(MajorVessels)
+Thalassemia = ["Fixed Defect", "Normal", "Reversible Defect"].index(Thalassemia) + 1
 
 input_dict = {
     'Age': Age,
@@ -76,22 +83,15 @@ input_dict = {
     'RestingECG': RestingECG,
     'MaxHR': MaxHR,
     'ExerciseAngina': ExerciseAngina,
-    'ST_Depress': ST_Depress,   # FIX 1: matches model feature name
+    'ST_Depress': ST_Depress,
     'ST_Slope': ST_Slope,
     'MajorVessels': MajorVessels,
     'Thalassemia': Thalassemia
 }
 
 input_df = pd.DataFrame([input_dict])
-
 input_encoded = pd.get_dummies(input_df, columns=categorical_cols, drop_first=True)
-
-# Align to the exact features the model was trained on (HeartDisease col will be 0, 
-# but that is a training bug — the model depends on it being present)
-expected_features = model.feature_names_in_
-input_encoded = input_encoded.reindex(columns=expected_features, fill_value=0)
-
-# FIX 3: Use transform() NOT fit_transform() — scaler was already fitted on training data
+input_encoded = input_encoded.reindex(columns=model.feature_names_in_, fill_value=0)
 input_encoded[numerical_cols] = scaler.transform(input_encoded[numerical_cols])
 
 if st.button("Predict Heart Disease Risk"):
