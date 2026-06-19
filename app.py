@@ -36,7 +36,7 @@ categorical_cols = [
 ]
 # FIX 1: Renamed ST_Depression → ST_Depress to match model's expected feature name
 # FIX 2: Removed HeartDisease from here (it was the target, not an input feature)
-numerical_cols = ['Age', 'RestingBp', 'Cholesterol', 'MaxHR', 'ST_Depress']
+numerical_cols = ['Age', 'Cholesterol', 'RestingBp', 'MaxHR', 'ST_Depress']  # order must match scaler
 
 # ------------------------------------------------------
 # Collect user inputs
